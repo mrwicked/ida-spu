@@ -310,7 +310,7 @@ inline void opreg_rt_ra_rb_rc(int16 itype, uint32 code)
 //--------------------------------------------------------------------------
 inline void opnear_roh_rol_repl_left_bit(op_t &x, uint32 code)
 {
-    int16 addr = (code << 2) & 0x3fc;
+    int32 addr = (code << 2) & 0x3fc;
     if ((code >> 8) & 1)
     {
           addr |= 0xfc00;
@@ -379,14 +379,14 @@ inline void opimm_i10(op_t &x, uint32 code)
 }
 
 //--------------------------------------------------------------------------
-inline void opnear_i16(op_t &x, uint32 code)
+inline void opnear_i16(op_t &x, uint32 code, uint32 ea)
 {
     int32 addr = (code >> 5) & 0x1fffc;
     if (((code >> 22) & 1))
     {
         addr |= 0x7fff << 17;
     }
-    addr += cmd.ea;
+    addr += ea;
     addr &= LSLR & 0xfffffffc;
     opnear(x, ea_t(addr));
 }
@@ -638,14 +638,14 @@ int ana(void)
 				// 0001 000      R0H I16 R0L         hbra    brinst, brtarg
 				cmd.itype = SPU_hbra;
                                 opnear_roh_rol_repl_left_bit(cmd.Op1, (int16) (((code >> 16) & 0x180) | (code & 0x7f)));
-                                opnear_i16(cmd.Op2, code);
+                                opnear_i16(cmd.Op2, code, 0);
 			}
 			else if (idx == 1)
 			{
 				// 0001 001      R0H I16 R0L         hbrr    brinst, brtarg
 				cmd.itype = SPU_hbrr;
                                 opnear_roh_rol_repl_left_bit(cmd.Op1, (int16) (((code >> 16) & 0x180) | (code & 0x7f)));
-                                opnear_i16(cmd.Op2, code);
+                                opnear_i16(cmd.Op2, code, cmd.ea);
 			}
 			else
 			{
@@ -759,14 +759,14 @@ int ana(void)
 					// 0010 0000 0   I16 RT               brz     rt, symbol
                                         cmd.itype = SPU_brz;
                                         opreg_rt(cmd.Op1, code);                                        
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, cmd.ea);
 				}
 				else
 				{
 					// 0010 0000 1   I16 RT               stqa    rt, symbol
                                         cmd.itype = SPU_stqa;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, 0);
 				}
 				break;
 			case 1:
@@ -779,7 +779,7 @@ int ana(void)
 						// 0010 0001 0   I16 RT               brnz    rt, symbol
                                                 cmd.itype = SPU_brnz;
                                                 opreg_rt(cmd.Op1, code);
-                                                opnear_i16(cmd.Op2, code);
+                                                opnear_i16(cmd.Op2, code, cmd.ea);
 						break;
 					case 4:
 						// 0010 0001 100 XXX SA RT            mtspr   sa, rt
@@ -801,7 +801,7 @@ int ana(void)
 				// 0010 0010 0   I16 RT               brhz    rt, symbol
                                 cmd.itype = SPU_brhz;
                                 opreg_rt(cmd.Op1, code);
-                                opnear_i16(cmd.Op2, code);
+                                opnear_i16(cmd.Op2, code, cmd.ea);
 				break;
 			case 3:
 				if (((code >> 23) & 1) == 0)
@@ -809,14 +809,14 @@ int ana(void)
 					// 0010 0011 0   I16 RT               brhnz   rt, symbol
                                         cmd.itype = SPU_brhnz;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, cmd.ea);
 				}
 				else
 				{
 					// 0010 0011 1   I16 RT               stqr    rt, symbol
                                         cmd.itype = SPU_stqr;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, cmd.ea);
 				}
 				break;
 			case 4:
@@ -918,24 +918,24 @@ int ana(void)
 				case 0:
 					// 0011 0000 0   I16 X                bra     symbol
                                         cmd.itype = SPU_bra;
-                                        opnear_i16(cmd.Op1, code);
+                                        opnear_i16(cmd.Op1, code, 0);
 					break;
 				case 1:
 					// 0011 0000 1   I16 RT               lqa     rt, symbol
                                         cmd.itype = SPU_lqa;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, 0);
 					break;
 				case 2:
 					// 0011 0001 0   I16 RT               brasl   rt, symbol
                                         cmd.itype = SPU_brasl;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, 0);
 					break;
 				case 4:
 					// 0011 0010 0   I16 X                br      symbol
                                         cmd.itype = SPU_br;
-                                        opnear_i16(cmd.Op1, code);
+                                        opnear_i16(cmd.Op1, code, cmd.ea);
 					break;
 				case 5:
 					// 0011 0010 1   I16 RT               fsmbi   rt, symbol
@@ -947,13 +947,13 @@ int ana(void)
 					// 0011 0011 0   I16 RT               brsl    rt, symbol
                                         cmd.itype = SPU_brsl;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, cmd.ea);
 					break;
 				case 7:
 					// 0011 0011 1   I16 RT               lqr     rt, symbol
                                         cmd.itype = SPU_lqr;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code);
+                                        opnear_i16(cmd.Op2, code, cmd.ea);
 					break;
 				case 8:
 				case 9:
