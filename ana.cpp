@@ -407,13 +407,8 @@ inline void opnear_i18(op_t &x, uint32 code)
 int ana(void)
 {
 	uint32 code = get_full_long(cmd.ea);
-
-        if (code == 0x34ffc0d0)
-        {
-                cmd.size = 0;
-        }
-
 	cmd.size = 4;
+
 	switch ( code >> 28 )
 	{
 	case 0:
