@@ -24,6 +24,12 @@
 
 #include "spu.hpp"
 #include <entry.hpp>
+#include <diskio.hpp>
+
+//------------------------------------------------------------------
+// channel definitions
+
+const ioport_t *find_channel(int channel);
 
 //----------------------------------------------------------------------
 inline void OutReg(int r)
@@ -31,7 +37,30 @@ inline void OutReg(int r)
   if ( r > rVds )
     warning("%a: outreg: illegal reg %d", cmd.ea, r);
   else
-    out_register(ph.regNames[r]);
+  {
+     char *reg;
+     static char* frgpr[] = { "$LR", "$SP" };
+
+     if ((idpflags & IAS_FRGPR) && r >= gpr0 && r <= gpr1)
+     {
+       reg = frgpr[r];
+     }
+     else if (r >= rch0 && r <= rch30)
+     {
+       const ioport_t *channel = find_channel(r - rch0);
+       if (channel)
+       {
+          reg = channel->name;
+          set_cmt(cmd.ea, channel->cmt, false);
+       }
+       else
+           reg = ph.regNames[r];
+     }
+     else
+       reg = ph.regNames[r];
+
+     out_register(reg);
+  }
 }
 
 //----------------------------------------------------------------------
@@ -161,7 +190,7 @@ void segend(ea_t)
 //--------------------------------------------------------------------------
 void header(void)
 {
-  gen_cmt_line("Processor       : %-8.8s [%s]", inf.procName, "SPU");
+  gen_cmt_line("Processor       : %-8.8s [%s]", inf.procName, device);
   gen_cmt_line("Target assembler: %s", ash.name);
   gen_cmt_line("Byte sex        : %s", inf.mf ? "Big endian" : "Little endian");
   if ( ash.header != NULL )

@@ -1,7 +1,12 @@
 PROC=spu
 DESCRIPTION=IBM SPU Cell Processor:spu
+ADDITIONAL_GOALS=config xml
 
 !include ..\module.mak
+
+config: $(C)spu.cfg
+$(C)spu.cfg:  spu.cfg
+	$(CP) $? $@
 
 # MAKEDEP dependency list ------------------
 $(F)ana$(O)     : $(I)area.hpp $(I)auto.hpp $(I)bytes.hpp $(I)fpro.h        \

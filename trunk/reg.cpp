@@ -104,6 +104,7 @@ static char *register_names[] =
 //-----------------------------------------------------------------------
 //           APU assembler
 //-----------------------------------------------------------------------
+
 static asm_t spuasm =
 {
   AS_COLON|AS_N2CHR|ASH_HEXF3|ASD_DECF0|ASB_BINF3|ASO_OCTF0|AS_ONEDUP,
@@ -161,10 +162,112 @@ static asm_t spuasm =
 static asm_t *asms[] = { &spuasm, NULL };
 
 //--------------------------------------------------------------------------
-const char *set_idp_options(const char *keyword,int /*value_type*/,const void * /*value*/)
+static ioport_t *ports = NULL;
+static size_t numports = 0;
+char device[MAXSTR] = "";
+static const char cfgname[] = "spu.cfg";
+
+netnode helper;
+proctype_t ptype = SONY_PS3;
+ushort idpflags = IAS_FRGPR;
+uint32 lslr_size = LSLR;
+
+static proctype_t ptypes[] =
 {
-  if ( keyword != NULL ) return IDPOPT_BADKEY;
-  return IDPOPT_OK;
+  SONY_PS3
+};
+
+const ioport_t *find_channel(int channel)
+{
+  return find_ioport(ports, numports, ea_t(channel));
+}
+
+static const char *spu_callback(const ioport_t *ports, size_t numports, const char *line);
+#define callback spu_callback
+#include "../iocommon.cpp"
+
+static void load_symbols(void)
+{
+  free_ioports(ports, numports);
+  ports = read_ioports(&numports, cfgname, device, sizeof(device), callback);
+}
+
+//--------------------------------------------------------------------------
+static const char *spu_callback(const ioport_t *ports, size_t numports, const char *line)
+{
+  char word[MAXSTR];
+  int value, len;
+
+  if ( sscanf(line, "%[^=] = %" FMT_EA "i", word, &value) == 2 )
+  {
+    if ( strcmp(word, "LSLR") == 0 )
+    {
+      lslr_size = value;
+      return NULL;
+    }
+  }
+  /*if ( sscanf(line, "channel %s %i%n", word, &value, &len) == 2 )
+  {
+    const char *ptr = &line[len];
+    ptr = skipSpaces(ptr);
+
+    return NULL;
+  }*/
+  return standard_callback(ports, numports, line);
+}
+
+//--------------------------------------------------------------------------
+static void choose_device(TView *[],int)
+{
+  if ( choose_ioport_device(cfgname, device, sizeof(device), NULL) )
+  {
+    load_symbols();
+  }
+}
+
+//--------------------------------------------------------------------------
+static const char *set_idp_options(const char *keyword,int value_type,const void *value)
+{
+  if ( keyword == NULL )
+  {
+    static const char form[] =
+"HELP\n"
+"IBM Cell SPU specific options _\n"
+" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n"
+"\n"
+" Friendly GPR definitions\n"
+"\n"
+"       If this option is on, IDA will use friendly\n"
+"       GPR register names like $LR and $SP.\n"
+"\n"
+"ENDHELP\n"
+"IBM Cell SPU specific options\n"
+"\n"
+" <~F~riendly GPR definitions:C>>\n"
+"\n"
+" <~C~hoose device name:B:0:::>\n"
+"\n"
+"\n";
+    AskUsingForm_c(form, &idpflags, choose_device);
+    return IDPOPT_OK;
+  }
+  else
+  {
+    if ( strcmp(keyword, "IBMSPU_FRGPR") == 0 )
+    {
+      setflag(idpflags,IAS_FRGPR,*(int*)value);
+      return IDPOPT_OK;
+    }
+    if ( value_type != IDPOPT_BIT ) return IDPOPT_BADTYPE;
+    return IDPOPT_BADKEY;
+  }
+}
+
+//--------------------------------------------------------------------------
+inline void set_device_name(const char *dev)
+{
+  if ( dev != NULL )
+    qstrncpy(device, dev, sizeof(device));
 }
 
 //----------------------------------------------------------------------
@@ -184,13 +287,52 @@ static int notify(processor_t::idp_notify msgid, ...)
 	switch(msgid)
 	{
         case processor_t::init:
-        {
-            inf.mf = 1;
-        }
+          helper.create("$ spu");
+          {
+            char buf[MAXSTR];
+            if ( helper.supval(0, buf, sizeof(buf)) > 0 )
+              set_device_name(buf);
+          }
+          inf.mf = 1; // MSB first
+          break;
+
+        case processor_t::term:
+          free_ioports(ports, numports);
+          break;
+
+        case processor_t::newfile:   // new file loaded
+          break;
+
+        case processor_t::oldfile:   // old file loaded
+          {
+            char buf[MAXSTR];
+            if ( helper.supval(-1, buf, sizeof(buf)) > 0 )
+              set_device_name(buf, IORESP_NONE);
+          }
+          break;
+
+        case processor_t::newasm:    // new assembler type
+          break;
+
+      case processor_t::closebase:
+      case processor_t::savebase:
+        helper.altset(-1, idpflags);
+        helper.supset(0,  device);
         break;
-       	case processor_t::newprc:
+
+      case processor_t::newprc:    // new processor type
         {
-            //int procnum = va_arg(va, int);
+          ptype = ptypes[va_arg(va, int)];
+          switch ( ptype )
+          {
+            case SONY_PS3:
+              break;
+            default:
+              error("interr: setprc");
+              break;
+          }
+          device[0] = '\0';
+          load_symbols();
         }
         break;
 
@@ -205,7 +347,7 @@ static int notify(processor_t::idp_notify msgid, ...)
 //-----------------------------------------------------------------------
 static char *shnames[] = { "SPU", NULL };
 static char *lnames[] = {
-  "IBM Cell SPU",
+  "IBM Cell Synergistic Processor Unit (SPU)",
   NULL
 };
 
