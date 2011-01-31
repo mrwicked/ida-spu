@@ -170,7 +170,7 @@ static const char cfgname[] = "spu.cfg";
 netnode helper;
 proctype_t ptype = SONY_PS3;
 ushort idpflags = IAS_FRGPR;
-uint32 lslr_size = LSLR;
+uint32 lslr_size = DEFAULT_LSLR;
 
 static proctype_t ptypes[] =
 {

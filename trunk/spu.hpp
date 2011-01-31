@@ -33,7 +33,7 @@
 //------------------------------------------------------------------------
 #define IAS_FRGPR        0x0001         // Friendly GPR registers. For ex. $LP, $SP
 
-#define LSLR		 0x0003ffff
+#define DEFAULT_LSLR	 0x0003ffff
 
 //------------------------------------------------------------------
 enum RegNo
@@ -119,6 +119,7 @@ extern proctype_t ptype;    // contains processor type
 
 extern netnode helper;
 extern ushort idpflags;
+extern uint32 lslr_size;
 
 //------------------------------------------------------------------
 void header(void);
