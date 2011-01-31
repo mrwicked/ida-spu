@@ -316,7 +316,7 @@ inline void opnear_roh_rol_repl_left_bit(op_t &x, uint32 code)
           addr |= 0xfc00;
     }
     addr += cmd.ea;
-    addr &= LSLR & 0xfffffffc;
+    addr &= lslr_size & 0xfffffffc;
     opnear(x, addr);
 }
 
@@ -387,7 +387,7 @@ inline void opnear_i16(op_t &x, uint32 code, uint32 ea)
         addr |= 0x7fff << 17;
     }
     addr += ea;
-    addr &= LSLR & 0xfffffffc;
+    addr &= lslr_size & 0xfffffffc;
     opnear(x, ea_t(addr));
 }
 
