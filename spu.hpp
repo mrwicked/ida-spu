@@ -29,12 +29,16 @@
 #include "ins.hpp"
 
 #define UAS_NOSPA        0x0001         // no space after comma
+
+//------------------------------------------------------------------------
+#define IAS_FRGPR        0x0001         // Friendly GPR registers. For ex. $LP, $SP
+
 #define LSLR		 0x0003ffff
 
 //------------------------------------------------------------------
 enum RegNo
 {
-	 	  // 128 general-purpose registers (GPRs)
+      // 128 general-purpose registers (GPRs)
 
      gpr0,     gpr1,     gpr2,     gpr3,     gpr4,     gpr5,     gpr6,     gpr7,
      gpr8,     gpr9,    gpr10,    gpr11,    gpr12,    gpr13,    gpr14,    gpr15,
@@ -53,7 +57,7 @@ enum RegNo
    gpr112,   gpr113,   gpr114,   gpr115,   gpr116,   gpr117,   gpr118,   gpr119,
    gpr120,   gpr121,   gpr122,   gpr123,   gpr124,   gpr125,   gpr126,   gpr127,
 
- 	 // 128 channels registers
+   // 128 channels registers
 
    rch0,   rch1,   rch2,   rch3,   rch4,   rch5,   rch6,   rch7,
    rch8,   rch9,  rch10,  rch11,  rch12,  rch13,  rch14,  rch15,
@@ -100,6 +104,21 @@ enum RegNo
  rVds,
 
 };
+
+//------------------------------------------------------------------
+// specific device name
+
+extern char device[MAXSTR];
+
+//------------------------------------------------------------------
+// processor types
+
+typedef uchar proctype_t;
+const proctype_t SONY_PS3 = 0;
+extern proctype_t ptype;    // contains processor type
+
+extern netnode helper;
+extern ushort idpflags;
 
 //------------------------------------------------------------------
 void header(void);
