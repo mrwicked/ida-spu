@@ -1,0 +1,4 @@
+Instructions:
+
+1. copy spu.cfg and spu.xml to your ida\cfg folder
+2. copy spu.w32 & spu64.w64 to your ida\procs folder
