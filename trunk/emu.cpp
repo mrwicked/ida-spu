@@ -73,16 +73,19 @@ int emu(void)
   int flag1 = is_forced_operand(cmd.ea, 0);
   int flag2 = is_forced_operand(cmd.ea, 1);
   int flag3 = is_forced_operand(cmd.ea, 2);
+  int flag4 = is_forced_operand(cmd.ea, 3);
 
   flow = ((Feature & CF_STOP) == 0);
 
   if ( Feature & CF_USE1 ) TouchArg(cmd.Op1, flag1, 1);
   if ( Feature & CF_USE2 ) TouchArg(cmd.Op2, flag2, 1);
   if ( Feature & CF_USE3 ) TouchArg(cmd.Op3, flag3, 1);
+  if ( Feature & CF_USE4 ) TouchArg(cmd.Op4, flag4, 1);
 
   if ( Feature & CF_CHG1 ) TouchArg(cmd.Op1, flag1, 0);
   if ( Feature & CF_CHG2 ) TouchArg(cmd.Op2, flag2, 0);
   if ( Feature & CF_CHG3 ) TouchArg(cmd.Op3, flag3, 0);
+  if ( Feature & CF_CHG4 ) TouchArg(cmd.Op4, flag4, 0);
 
 //
 //      Determine if the next instruction should be executed
