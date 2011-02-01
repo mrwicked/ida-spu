@@ -231,34 +231,43 @@
 //--------------------------------------------------------------------------
 inline void opreg(op_t &x, uint16 n)
 {
-	x.type = o_reg;
-	x.dtyp = dt_byte16;
-	x.reg  = n;
+    x.type = o_reg;
+    x.dtyp = dt_byte16;
+    x.reg  = n;
 }
 
 //--------------------------------------------------------------------------
 inline void opimm(op_t &x, int32 value)
 {
-	x.type   = o_imm;
-	x.dtyp   = dt_dword;
-	x.value  = value;
+    x.type   = o_imm;
+    x.dtyp   = dt_dword;
+    x.value  = value;
+}
+
+//--------------------------------------------------------------------------
+inline void opmem(op_t &x, ea_t addr)
+{
+    x.type   = o_mem;
+    x.dtyp   = dt_byte;
+    x.offb   = (char)cmd.size;
+    x.addr   = addr;
 }
 
 //--------------------------------------------------------------------------
 inline void opnear(op_t &x, ea_t addr)
 {
-	x.type   = o_near;
-	x.dtyp   = dt_code;
-	x.addr   = addr;
+    x.type   = o_near;
+    x.dtyp   = dt_code;
+    x.addr   = addr;
 }
 
 //--------------------------------------------------------------------------
 inline void opphr(op_t &x, int32 value, int16 phrase)
 {
-	x.type   = o_phrase;
-	x.value  = value;
-        x.phrase = phrase;
-	x.dtyp   = dt_dword;
+    x.type   = o_phrase;
+    x.value  = value;
+    x.phrase = phrase;
+    x.dtyp   = dt_dword;
 }
 
 //--------------------------------------------------------------------------
@@ -392,15 +401,28 @@ inline void opnear_i16(op_t &x, uint32 code, uint32 ea)
 }
 
 //--------------------------------------------------------------------------
+inline void opmem_i16(op_t &x, uint32 code, uint32 ea)
+{
+    int32 addr = (code >> 5) & 0x1fffc;
+    if (((code >> 22) & 1))
+    {
+        addr |= 0x7fff << 17;
+    }
+    addr += ea;
+    addr &= lslr_size & 0xfffffffc;
+    opmem(x, ea_t(addr));
+}
+
+//--------------------------------------------------------------------------
 inline void opimm_i16(op_t &x, uint32 code)
 {
     opimm(x, (code >> 7) & 0xffff);
 }
 
 //--------------------------------------------------------------------------
-inline void opnear_i18(op_t &x, uint32 code)
+inline void opmem_i18(op_t &x, uint32 code)
 {
-    opnear(x, ea_t((code >> 7) & 0x3ffff));
+    opmem(x, ea_t((code >> 7) & 0x3ffff));
 }
 
 //--------------------------------------------------------------------------
@@ -766,7 +788,7 @@ int ana(void)
 					// 0010 0000 1   I16 RT               stqa    rt, symbol
                                         cmd.itype = SPU_stqa;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code, 0);
+                                        opmem_i16(cmd.Op2, code, 0);
 				}
 				break;
 			case 1:
@@ -816,7 +838,7 @@ int ana(void)
 					// 0010 0011 1   I16 RT               stqr    rt, symbol
                                         cmd.itype = SPU_stqr;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code, cmd.ea);
+                                        opmem_i16(cmd.Op2, code, cmd.ea);
 				}
 				break;
 			case 4:
@@ -924,7 +946,7 @@ int ana(void)
 					// 0011 0000 1   I16 RT               lqa     rt, symbol
                                         cmd.itype = SPU_lqa;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code, 0);
+                                        opmem_i16(cmd.Op2, code, 0);
 					break;
 				case 2:
 					// 0011 0001 0   I16 RT               brasl   rt, symbol
@@ -953,7 +975,7 @@ int ana(void)
 					// 0011 0011 1   I16 RT               lqr     rt, symbol
                                         cmd.itype = SPU_lqr;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i16(cmd.Op2, code, cmd.ea);
+                                        opmem_i16(cmd.Op2, code, cmd.ea);
 					break;
 				case 8:
 				case 9:
@@ -1284,7 +1306,7 @@ int ana(void)
 					// 0100 001      I18 RT               ila     rt, symbol
                                         cmd.itype = SPU_ila;
                                         opreg_rt(cmd.Op1, code);
-                                        opnear_i18(cmd.Op2, code);
+                                        opmem_i18(cmd.Op2, code);
 					break;
 				case 4:
 					// 0100 0100     I10 RA RT            xori    rt, ra, value

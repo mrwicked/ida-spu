@@ -217,9 +217,9 @@ instruc_t Instructions[] =
 { "lqd",       CF_USE3|CF_USE2|CF_CHG1                           },      // Load Quadword (d-form)                             
 { "lqr",       CF_USE2|CF_CHG1                                   },      // Load Quadword Instruction Relative (a-form)        
 { "lqx",       CF_USE3|CF_USE2|CF_CHG1                           },      // Load Quadword (x-form)                             
-{ "stqa",      CF_USE2|CF_CHG1                                   },      // Store Quadword (a-form)                            
-{ "stqd",      CF_USE3|CF_USE2|CF_CHG1                           },      // Store Quadword (d-form)                            
-{ "stqr",      CF_USE2|CF_CHG1                                   },      // Store Quadword Instruction Relative (a-form)       
+{ "stqa",      CF_CHG2|CF_USE1                                   },      // Store Quadword (a-form)
+{ "stqd",      CF_USE3|CF_USE2|CF_CHG1                           },      // Store Quadword (d-form)
+{ "stqr",      CF_CHG2|CF_USE1                                   },      // Store Quadword Instruction Relative (a-form)
 { "stqx",      CF_USE3|CF_USE2|CF_CHG1                           },      // Store Quadword (x-form)
 
 // Shift and Rotate Instructions
