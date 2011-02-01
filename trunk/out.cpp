@@ -89,6 +89,14 @@ bool outop(op_t &x)
       OutValue(x, OOFS_IFSIGN|OOF_SIGNED|OOFW_32);
       break;
 
+    case o_mem:
+      {
+        ea_t ea = toEA(dataSeg(), x.addr);
+        if ( !out_name_expr(x, ea, x.addr) )
+          out_bad_address(x.addr);
+      }
+      break;
+
     case o_near:
       {
         ea_t ea = toEA(cmd.cs, x.addr);

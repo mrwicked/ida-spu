@@ -27,7 +27,7 @@
 static int flow;
 
 //----------------------------------------------------------------------
-static void TouchArg(op_t &x,int,int)
+static void TouchArg(op_t &x,int,int isload)
 {
   switch ( x.type )
   {
@@ -52,6 +52,11 @@ static void TouchArg(op_t &x,int,int)
           ftype = fl_CN;
         }
         ua_add_cref(x.offb, ea, ftype);
+      }
+      case o_mem:
+      {
+        ea_t ea = toEA(dataSeg(), x.addr);
+        ua_add_dref(x.offb, ea, isload ? dr_R : dr_W);
       }
       break;
     default:
