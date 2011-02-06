@@ -335,9 +335,22 @@ static int notify(processor_t::idp_notify msgid, ...)
           load_symbols();
         }
         break;
-
+	case processor_t::is_ret_insn:
+        {
+            bool strict = va_arg(va, bool);
+            switch (cmd.itype)
+            {
+                case SPU_bi:
+                        return cmd.Op1.reg == 0 ? 2 : 1;
+                case SPU_iret:
+                case SPU_stop:
+                case SPU_stopd:
+                        return strict ? 1 : 2;
+            }
+        }
+        break;
 	default:
-        	break;
+             break;
 	}
 	va_end(va);
 
@@ -401,7 +414,7 @@ processor_t LPH =
   rVcs, rVds,
 
   NULL,                 // No known code start sequences
-  NULL,
+  NULL,                 // Array of 'return' instruction opcodes
 
   SPU_null,
   SPU_last,
