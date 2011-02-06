@@ -45,12 +45,23 @@ static void TouchArg(op_t &x,int,int isload)
       {
         cref_t ftype = fl_JN;
         ea_t ea = toEA(cmd.cs, x.addr);
-        if ( InstrIsSet(cmd.itype, CF_CALL) )
+        switch(cmd.itype)
         {
-          if ( !func_does_return(ea) )
-            flow = false;
-          ftype = fl_CN;
-        }
+		case SPU_hbr:
+		case SPU_hbrp:
+		case SPU_hbra:
+		case SPU_hbrr:
+			ftype = fl_F;
+			break;
+        default:
+	        if ( InstrIsSet(cmd.itype, CF_CALL) )
+	        {
+	          if ( !func_does_return(ea) )
+	            flow = false;
+	          ftype = fl_CN;
+	        }
+	        break;
+	    }
         ua_add_cref(x.offb, ea, ftype);
       }
       case o_mem:
