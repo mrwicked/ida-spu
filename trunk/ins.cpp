@@ -37,7 +37,7 @@ instruc_t Instructions[] =
 
 // Compare, Branch, and Halt Instructions
 
-{ "bi",        CF_USE1|CF_JUMP                                   },      // Branch Indirect                                    
+{ "bi",        CF_USE1|CF_STOP|CF_JUMP                           },      // Branch Indirect                                    
 { "bihnz",     CF_USE2|CF_USE1|CF_JUMP                           },      // Branch Indirect If Not Zero Halfword               
 { "bihz",      CF_USE2|CF_USE1|CF_JUMP                           },      // Branch Indirect If Zero Halfword                   
 { "binz",      CF_USE2|CF_USE1|CF_JUMP                           },      // Branch Indirect If Not Zero                        
