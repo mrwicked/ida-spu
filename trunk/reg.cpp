@@ -357,15 +357,6 @@ static int notify(processor_t::idp_notify msgid, ...)
 	return(1);
 }
 
-//--------------------------------------------------------------------------
-static uchar retcode_0[] = { 0x35, 0x00, 0x00, 0x00 };  // bi
-
-static bytes_t retcodes[] =
-{
- { sizeof(retcode_0), retcode_0 },
- { 0, NULL }
-};
-
 //-----------------------------------------------------------------------
 static char *shnames[] = { "SPU", NULL };
 static char *lnames[] = {
@@ -423,7 +414,7 @@ processor_t LPH =
   rVcs, rVds,
 
   NULL,                 // No known code start sequences
-  retcodes,             // Array of 'return' instruction opcodes
+  NULL,                 // Array of 'return' instruction opcodes
 
   SPU_null,
   SPU_last,
