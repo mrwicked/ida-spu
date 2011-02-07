@@ -341,11 +341,11 @@ static int notify(processor_t::idp_notify msgid, ...)
             switch (cmd.itype)
             {
                 case SPU_bi:
-                        return cmd.Op1.reg == 0 ? 2 : 1;
+                      return (cmd.Op1.reg == 0 ? 2 : 1);
                 case SPU_iret:
                 case SPU_stop:
                 case SPU_stopd:
-                        return strict ? 1 : 2;
+                      return strict ? 1 : 2;
             }
         }
         break;
@@ -356,6 +356,15 @@ static int notify(processor_t::idp_notify msgid, ...)
 
 	return(1);
 }
+
+//--------------------------------------------------------------------------
+static uchar retcode_0[] = { 0x35, 0x00, 0x00, 0x00 };  // bi
+
+static bytes_t retcodes[] =
+{
+ { sizeof(retcode_0), retcode_0 },
+ { 0, NULL }
+};
 
 //-----------------------------------------------------------------------
 static char *shnames[] = { "SPU", NULL };
@@ -414,7 +423,7 @@ processor_t LPH =
   rVcs, rVds,
 
   NULL,                 // No known code start sequences
-  NULL,                 // Array of 'return' instruction opcodes
+  retcodes,             // Array of 'return' instruction opcodes
 
   SPU_null,
   SPU_last,
