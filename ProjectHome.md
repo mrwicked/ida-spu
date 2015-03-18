@@ -1,0 +1,1 @@
+This is a IDA processor module for the IBM Cell Synergistic Processor Unit (SPU) (that can be found in the PS3 for example).
